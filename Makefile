@@ -16,6 +16,10 @@ init:
 	git init
 	git add .
 	git commit -m "Initial commit"
+	renv_init
+	init_repo
+
+init_repo:
 	gh repo create $(GITHUB_USER)/$(REPO_NAME) --private --source=. --remote=origin
 	git push -u origin $(BRANCH)
 
@@ -26,19 +30,25 @@ sync:
 
 # Push to GitHub
 push:
+	git pull origin $(BRANCH)  
 	Rscript -e "renv::snapshot()"
 	git add .
 	git commit -m "Update analysis and data"
-	git pull origin $(BRANCH)
 	git push origin $(BRANCH)
 
 # R environment setup with renv
 renv_init:
-	Rscript -e "if (!requireNamespace('renv', quietly = TRUE)) install.packages('renv')"
+	Rscript -e "if (!requireNamespace('renv', quietly = TRUE)) { options(repos = c(CRAN = 'https://cloud.r-project.org')); install.packages('renv') }"
 	Rscript -e "renv::init()"
+	git add .
+	git commit -m "Initialize R environment with renv"
 
 renv_update:
+    # Rscript -e "renv::install(c("backports", "callr", "cli", "cpp11", "crayon", "data.table", "digest", "farver", "fs", "ggplot2", "glue", "gtable", "jsonlite", "lifecycle", "magrittr", "pillar", "pkgconfig", "purrr", "R6", "rlang", "stringr", "tibble", "vctrs", "withr", "xml2"))"
 	Rscript -e "renv::snapshot()"
+	git add .
+	git commit -m "Update renv snapshot"
+
 
 # Data analysis workflow
 data_analysis: clean_data analysis make_figures report
