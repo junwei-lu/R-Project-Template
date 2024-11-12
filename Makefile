@@ -4,7 +4,8 @@
 REPO_NAME = your-repo-name
 GITHUB_USER = your-github-username
 BRANCH = main
-SETUP_RENV = true  # Change to 'false' to skip renv setup
+SETUP_RENV =true
+# set to false to skip renv setup
 
 
 # Declare phony targets
@@ -18,10 +19,10 @@ init:
 	git init
 	git add .
 	git commit -m "Initial commit"
-	ifeq ($(SETUP_RENV), true)
-		make renv_init
-		make init_repo
-	endif
+	@if [ "$(SETUP_RENV)" = "true" ]; then \
+		make renv_init; \
+	fi
+	make init_repo
 
 init_repo:
 	gh repo create $(GITHUB_USER)/$(REPO_NAME) --private --source=. --remote=origin
@@ -30,16 +31,16 @@ init_repo:
 # Sync with Github
 sync:
 	git pull origin $(BRANCH)
-	ifeq ($(SETUP_RENV), true)
-		Rscript -e "renv::restore()"
-	endif
+	@if [ "$(SETUP_RENV)" = "true" ]; then \
+		Rscript -e "renv::restore()"; \
+	fi
 
 # Push to GitHub
 push:
 	git pull origin $(BRANCH)
-	ifeq ($(SETUP_RENV), true)
-		Rscript -e "renv::snapshot()"
-	endif
+	@if [ "$(SETUP_RENV)" = "true" ]; then \
+		Rscript -e "renv::snapshot()"; \
+	fi
 	git add .
 	git commit -m "Update analysis and data"
 	git push origin $(BRANCH)
