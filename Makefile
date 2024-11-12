@@ -4,6 +4,8 @@
 REPO_NAME = your-repo-name
 GITHUB_USER = your-github-username
 BRANCH = main
+SETUP_RENV = true  # Change to 'false' to skip renv setup
+
 
 # Declare phony targets
 .PHONY: all init sync push renv_init renv_update data_analysis clean_data analysis make_figures report help
@@ -16,8 +18,10 @@ init:
 	git init
 	git add .
 	git commit -m "Initial commit"
-	renv_init
-	init_repo
+	ifeq ($(SETUP_RENV), true)
+		make renv_init
+		make init_repo
+	endif
 
 init_repo:
 	gh repo create $(GITHUB_USER)/$(REPO_NAME) --private --source=. --remote=origin
@@ -26,12 +30,16 @@ init_repo:
 # Sync with Github
 sync:
 	git pull origin $(BRANCH)
-	Rscript -e "renv::restore()"
+	ifeq ($(SETUP_RENV), true)
+		Rscript -e "renv::restore()"
+	endif
 
 # Push to GitHub
 push:
-	git pull origin $(BRANCH)  
-	Rscript -e "renv::snapshot()"
+	git pull origin $(BRANCH)
+	ifeq ($(SETUP_RENV), true)
+		Rscript -e "renv::snapshot()"
+	endif
 	git add .
 	git commit -m "Update analysis and data"
 	git push origin $(BRANCH)
@@ -40,15 +48,14 @@ push:
 renv_init:
 	Rscript -e "if (!requireNamespace('renv', quietly = TRUE)) { options(repos = c(CRAN = 'https://cloud.r-project.org')); install.packages('renv') }"
 	Rscript -e "renv::init()"
+	Rscript -e "renv::install(c('backports', 'callr', 'cli', 'cpp11', 'crayon', 'data.table', 'digest', 'farver', 'fs', 'ggplot2', 'glue', 'gtable', 'jsonlite', 'lifecycle', 'magrittr', 'pillar', 'pkgconfig', 'purrr', 'R6', 'rlang', 'stringr', 'tibble', 'vctrs', 'withr', 'xml2'))"
 	git add .
 	git commit -m "Initialize R environment with renv"
 
 renv_update:
-    # Rscript -e "renv::install(c("backports", "callr", "cli", "cpp11", "crayon", "data.table", "digest", "farver", "fs", "ggplot2", "glue", "gtable", "jsonlite", "lifecycle", "magrittr", "pillar", "pkgconfig", "purrr", "R6", "rlang", "stringr", "tibble", "vctrs", "withr", "xml2"))"
 	Rscript -e "renv::snapshot()"
 	git add .
 	git commit -m "Update renv snapshot"
-
 
 # Data analysis workflow
 data_analysis: clean_data analysis make_figures report

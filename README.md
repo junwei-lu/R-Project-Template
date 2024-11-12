@@ -5,6 +5,8 @@
 
 - `raw_data/`: Original, immutable data (read-only)
 - `data/`: Cleaned data ready for analysis
+- `docs/`: Documentation
+  - `notes.md`: Notes on the project: To-Do, Discussions, etc.
 - `src/R/`: Numbered analysis scripts showing workflow
   - `00_clean_data.R`: Data cleaning and preprocessing
   - `01_analysis.R`: Model fitting and analysis
@@ -38,20 +40,18 @@ Rscript -e "renv::restore()"
 
 	3.2. Add to .gitignore if data is sensitive:
 	```gitignore
-	raw_data/*.csv
-	raw_data/*.xlsx
+	raw_data/*
 	```
 
 ## Analysis Pipeline
 
 ```bash
-make clean      # Clean generated files
-make data      # Process raw data
-make analysis  # Run analysis
-make figures   # Generate figures
-make summary   # Summarize results
-make report    # Generate final report
-make all       # Run complete pipeline
+make clean_data   # Run data cleaning script
+make analysis     # Run analysis script (requires clean data)
+make make_figures # Generate figures (requires analysis)
+make report       # Generate final report (requires analysis and figures)
+make data_analysis # Run the complete data analysis workflow
+make all          # Run the complete workflow and push to GitHub
 ```
 
 ## Data Documentation
